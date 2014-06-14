@@ -1,0 +1,309 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.17+ wizard for JavaCC 1.5.0+
+ */
+options {
+  JDK_VERSION = "1.5";
+  static = false;
+}
+
+PARSER_BEGIN(Parser)
+
+package parser;
+
+import ast.*;
+import java.util.*;
+
+public class Parser { }
+
+PARSER_END(Parser)
+
+SKIP : {
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+TOKEN : /* OPERATORS */ {
+  < PLUS : "+" >
+| < MINUS : "-" >
+| < MULTIPLY : "*" >
+| < LPAR : "(" >
+| < LPARC : "{" >
+| < RPARC : "}" >
+| < RPAR : ")" >
+//| < EOL: "\n" >
+| < DIVIDE: "/" >
+| < LESS: "<" >
+| < LESSEQ: "<=" >
+| < GREATER: ">" >
+| < GREATEREQ: ">=" >
+| < EQUALS: "==" >
+| < NOTEQUALS: "!=" >
+| < AND: "and" >
+| < OR: "or" >
+| < NOT: "not" >
+| < TFALSE: "false" >
+| < TTRUE: "true" >
+| < COLON: ":" >
+| < COMMA: "," >
+| < QSTMARK: "?" >
+| < VAL: "val" >
+| < ASSIGN: "=" >
+| < SEMICOLON: ";" >
+| < IF : "if" >
+| < ELSE : "else" >
+| < WHILE: "while" >
+| < PRINT: "print" >
+| < PRINTLN: "println()" >
+| < FREE: "free" >
+| < RETURN: "return" >
+| < VAR: "var" >
+| < END: "END" | "end" >
+| < ALLOC: "alloc" >
+| < FUNCTION: "function" >
+| < DOT: "." >
+| < INTEGER: "int" >
+| < STR: "string" >
+| < BOOL: "bool" >
+| < FUN : "fun" >
+| < LPARQ : "[" >
+| < RPARQ : "]" >
+| < CONCAT : "@" >
+| < FOR : "for" >
+| < THIS : "this" >
+}
+
+TOKEN : {
+  < INT : (< DIGIT >)+ >
+| < STRING : "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+| < #DIGIT : [ "0"-"9" ] >
+}
+
+TOKEN : {
+  < ID: < LETTER >(< LETTER > | < DIGIT >)* (["$"])? >
+| < LABEL: (< LETTER >)+ (["$"])? >
+| < #LETTER: (["a"-"z","A"-"Z"]) >
+}
+
+ASTNode main() :
+{ ASTNode e; }
+{
+  e = stmt() < END > { return e; }
+}
+
+/* STATEMENT */
+
+ASTNode stmt() :
+{ ASTNode l, r; }
+{
+ l = loop() [< SEMICOLON > [r = stmt() { l = new ASTSeq(l,r); }]]
+ 	{ return l; }
+}
+
+ASTNode loop() :
+{ Token i; ASTNode e, l, r, rr; List<ASTNode> ln = new ArrayList<ASTNode>(); }
+{
+  < LPARC > l = progblock() < RPARC >
+  	{ return l; }
+| < WHILE > < LPAR > l = expr() < RPAR > r = stmt() { l = new ASTWhile(l,r); }
+  	{ return l; }
+| < FOR > < LPAR > i = < ID > < COLON > l = expr() (< RPAR > r = stmt() { l = new ASTForEach(i.image, l, r); } | < COMMA > rr = expr() < RPAR > r = stmt() { l = new ASTForEachFilter(i.image, l, r, rr); } )
+ 	{ return l; }
+| < IF > < LPAR > e = expr() < RPAR > l = stmt() (< ELSE > r = stmt() { l = new ASTIfElse(e, l, r); } | { l = new ASTIf(e, l); } )
+  	{ return l; }
+| < PRINT > < LPAR > l = expr() < RPAR > { l = new ASTPrint(l); }
+	{ return l; }
+| < PRINTLN > { l = new ASTPrint(null); }
+	{ return l; }
+| < FREE > < LPAR > l = expr() < RPAR > { l = new ASTFree(l); }
+	{ return l; }
+| l = expr() [ < ASSIGN > r = expr() { l = new ASTAssign(l,r); } |
+ 			   < LPAR > [ln = params()] < RPAR > { l = new ASTApp(l, ln); } ]
+ 	{ return l; }
+}
+
+
+/* EXPRESSION */
+
+ASTNode expr() :
+{ ASTNode l, r, rr; List<Pair<String, String>> e; List<ASTNode> ln = new ArrayList<ASTNode>(); }
+{
+ l = or() ( < QSTMARK > r = or() < COLON > rr = or() { l = new ASTCond(l,r,rr); }// |
+ 			)*
+ 	{ return l; }
+| < LPARC > l = objectblock() < RPARC > { return l; }
+| (< FUNCTION > < LPAR > e = args() < RPAR > r = block() { l = new ASTFun(e,r); } | l = block() ) 
+	{ return l; }
+}
+
+ASTNode or() :
+{ ASTNode l, r; }
+{
+  l = and() (< OR > r = and() { l = new ASTOr(l,r); } )*
+  	{ return l; }
+}
+
+ASTNode and() :
+{ ASTNode l, r; }
+{
+  l = eqs() (< AND > r = eqs() { l = new ASTAnd(l,r); } )*
+  	{ return l; }
+}
+
+ASTNode eqs() :
+{ ASTNode l, r; }
+{
+  l = reg() (	< EQUALS > r = reg() { l = new ASTEquals(l,r); } |
+				< NOTEQUALS > r = reg() { l = new ASTNotEquals(l,r); } )*
+    { return l; }
+}
+
+ASTNode reg() :
+{ ASTNode l, r; }
+{
+  l = regeq() (	< LESS > r = regeq() { l = new ASTLess(l,r); } |
+				< LESSEQ > r = regeq() { l = new ASTLessEq(l,r); } |
+				< GREATER > r = regeq() { l = new ASTGreater(l,r); } |
+				< GREATEREQ > r = regeq() { l = new ASTGreaterEq(l,r); } )*
+    { return l; }
+}
+
+ASTNode regeq() :
+{ ASTNode l, r; }
+{
+  l = term() ( 	< PLUS > r = term() { l = new ASTAdd(l,r); } |
+  				< MINUS > r = term() { l = new ASTSub(l,r); } )*
+    { return l; }
+}
+
+ASTNode term() :
+{ ASTNode l, r; }
+{
+  l = term2() ( < MULTIPLY > r = term2() { l = new ASTMul(l,r); } |
+  				< DIVIDE > r = term2() { l = new ASTDivide(l,r); } )*
+    { return l; }
+}
+
+ASTNode term2() :
+{ Token i; ASTNode l, r; List<ASTNode> ln = new ArrayList<ASTNode>(); }
+{
+  l = term3() (	< DOT > i = < ID > { l = new ASTRecordVal(l, i.image); } |
+ 				< LPARQ > r = expr() < RPARQ > { l = new ASTListVal(l, r); } |
+ 			 	< CONCAT > r = expr() { l = new ASTConcat(l, r); } )*
+	{ return l; } 	
+}
+
+ASTNode term3() :
+{ Token i; ASTNode l, r; List<ASTNode> ln = new ArrayList<ASTNode>(); }
+{	l = unary() ( < LPAR > [ln = params()] < RPAR > { l = new ASTApp(l, ln); } )* { return l; }
+}
+
+
+ASTNode unary() :
+{ ASTNode l; }
+{
+  < NOT > l = factor() { return new ASTNot(l); }
+| l = factor() { return l; }
+}
+
+ASTNode factor() :
+{ Token t; ASTNode e; List<ASTNode> ln = new ArrayList<ASTNode>(); }
+{
+  t = < INT > { return new ASTNum(Integer.parseInt(t.image)); }
+| t = < STRING > { return new ASTString(new String(t.image)); }
+| t = < ID > { return new ASTId(t.image); }
+| t = < THIS > { return new ASTThis(); }
+| t = < LABEL > { return new ASTLabel(t.image); }
+| < LPAR > e = loop() < RPAR > { return e; }
+| < TFALSE >  { return new ASTFalse(); }
+| < TTRUE >  { return new ASTTrue(); }
+| < MULTIPLY > e = factor() { return new ASTDeref(e); }
+| < ALLOC > < LPAR > e = alloc() < RPAR > { return e; }
+| < LPARQ > ln = params() < RPARQ > { return new ASTList(ln); }
+}
+
+
+/* AUX */
+
+ASTDecl decl() :
+{
+	Token i; ASTNode d, r; List<Pair<String, String>> e;
+	ASTDecl list = new ASTDecl();
+}
+{
+  ( ( 	< VAL > i = < ID > < ASSIGN > d = expr() < SEMICOLON > |
+        < VAR > i = < ID > < ASSIGN > d = alloc() < SEMICOLON > |
+        < FUNCTION > i = < ID > < LPAR > e = args() < RPAR > r = block() { d = new ASTFun(e, r); }
+    ) { list.addToList(i.image, d); } )*
+	{ return list; }
+}
+
+ASTNode alloc() :
+{ ASTNode e; }
+{
+  e = expr() { return new ASTVar(e); }
+}
+
+List<ASTNode> params() :
+{ ASTNode e; List<ASTNode> list = new ArrayList<ASTNode>(); }
+{
+  e = expr() { list.add(e); } ( < COMMA > e = expr() { list.add(e); } )*
+	{ return list; }
+}
+
+List<Pair<String, String>> args() :
+{ List<Pair<String, String>> list = new ArrayList<Pair<String, String>>(); Token i; String t = ""; }
+{
+   [i = < ID > [< COLON > t = type() ] { list.add(new Pair(i.image, t)); }
+   		( < COMMA > i = < ID > [< COLON > t = type() ] { list.add(new Pair(i.image, t)); } )*]
+	{ return list; }
+}
+
+String type() :
+{ Token i; List<String > f; String t; }
+{
+  i = < INTEGER > { return i.image; }
+| i = < BOOL > { return i.image; }
+| i = < STR > { return i.image; }
+| i = < MULTIPLY > type() { return i.image; }
+| i = < FUN > < LPAR > f = funtypes() < SEMICOLON > t = type() < RPAR > { return i.image+"("+f+","+t+")"; }	
+}
+
+List<String> funtypes() :
+{ List<String > list = new ArrayList<String >(); String t; }
+{
+   [ t = type() { list.add(t); } ( < COMMA > t = type() { list.add(t); } )* ]
+	{ return list; }
+}
+
+ASTNode progblock() :
+{ ASTDecl l; ASTNode r; }
+{
+	l = decl() r = stmt()
+	{
+		if(l.l.size()!=0) { l.setBody(r); return l; }
+		else return r;
+	}
+}
+
+ASTNode objectblock() :
+{ ASTRecord list = new ASTRecord(); Token t; ASTNode r; }
+{
+	t = < ID > < COLON > r = expr() { list.addToList(t.image, r); }
+		( < COMMA > t = < ID > < COLON > r = expr() { list.addToList(t.image, r); } )*
+		{ return list; }
+}
+
+ASTNode block() :
+{ ASTNode d = null, e; }
+{ 
+	< LPARC > [d = progblock()] < RETURN > e = expr() [< SEMICOLON >] < RPARC >
+	{
+	  if (d!=null)
+	  	e = new ASTBlock(d, e);
+	  else
+		e = new ASTBlock(new ASTTrue(), e);  
+	}
+	{ return e; }
+}
