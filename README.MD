@@ -1,3 +1,7 @@
+
+```
+#!python
+
 {
     val x = alloc(1);
 
@@ -34,6 +38,7 @@ END
     print(*(x.a));
 }
 END
+
 
 EXEMPLOS DEMONSTRATIVOS:
 EXEMPLO FUNCAO:
@@ -129,3 +134,4 @@ EXEMPLO FILTRAGEM E LISTA:
 
 }
 END
+```
