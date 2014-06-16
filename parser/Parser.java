@@ -18,8 +18,16 @@ public class Parser implements ParserConstants {
   final public ASTNode stmt() throws ParseException {
   ASTNode l, r;
     l = loop();
-    switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case SEMICOLON:
+    label_1:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+      case SEMICOLON:
+        ;
+        break;
+      default:
+        jj_la1[0] = jj_gen;
+        break label_1;
+      }
       jj_consume_token(SEMICOLON);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case MULTIPLY:
@@ -42,17 +50,13 @@ public class Parser implements ParserConstants {
       case STRING:
       case ID:
       case LABEL:
-        r = stmt();
+        r = loop();
                                          l = new ASTSeq(l,r);
         break;
       default:
-        jj_la1[0] = jj_gen;
+        jj_la1[1] = jj_gen;
         ;
       }
-      break;
-    default:
-      jj_la1[1] = jj_gen;
-      ;
     }
           {if (true) return l;}
     throw new Error("Missing return statement in function");
@@ -72,7 +76,7 @@ public class Parser implements ParserConstants {
       jj_consume_token(LPAR);
       l = expr();
       jj_consume_token(RPAR);
-      r = stmt();
+      r = loop();
                                                       l = new ASTWhile(l,r);
           {if (true) return l;}
       break;
@@ -85,14 +89,14 @@ public class Parser implements ParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case RPAR:
         jj_consume_token(RPAR);
-        r = stmt();
+        r = loop();
                                                                           l = new ASTForEach(i.image, l, r);
         break;
       case COMMA:
         jj_consume_token(COMMA);
         rr = expr();
         jj_consume_token(RPAR);
-        r = stmt();
+        r = loop();
                                                                                                                                                              l = new ASTForEachFilter(i.image, l, r, rr);
         break;
       default:
@@ -107,11 +111,11 @@ public class Parser implements ParserConstants {
       jj_consume_token(LPAR);
       e = expr();
       jj_consume_token(RPAR);
-      l = stmt();
+      l = loop();
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ELSE:
         jj_consume_token(ELSE);
-        r = stmt();
+        r = loop();
                                                                         l = new ASTIfElse(e, l, r);
         break;
       default:
@@ -227,7 +231,7 @@ public class Parser implements ParserConstants {
     case ID:
     case LABEL:
       l = or();
-      label_1:
+      label_2:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case QSTMARK:
@@ -235,7 +239,7 @@ public class Parser implements ParserConstants {
           break;
         default:
           jj_la1[8] = jj_gen;
-          break label_1;
+          break label_2;
         }
         jj_consume_token(QSTMARK);
         r = or();
@@ -282,7 +286,7 @@ public class Parser implements ParserConstants {
   final public ASTNode or() throws ParseException {
   ASTNode l, r;
     l = and();
-    label_2:
+    label_3:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case OR:
@@ -290,7 +294,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[11] = jj_gen;
-        break label_2;
+        break label_3;
       }
       jj_consume_token(OR);
       r = and();
@@ -303,7 +307,7 @@ public class Parser implements ParserConstants {
   final public ASTNode and() throws ParseException {
   ASTNode l, r;
     l = eqs();
-    label_3:
+    label_4:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case AND:
@@ -311,7 +315,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[12] = jj_gen;
-        break label_3;
+        break label_4;
       }
       jj_consume_token(AND);
       r = eqs();
@@ -324,7 +328,7 @@ public class Parser implements ParserConstants {
   final public ASTNode eqs() throws ParseException {
   ASTNode l, r;
     l = reg();
-    label_4:
+    label_5:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case EQUALS:
@@ -333,7 +337,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[13] = jj_gen;
-        break label_4;
+        break label_5;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case EQUALS:
@@ -359,7 +363,7 @@ public class Parser implements ParserConstants {
   final public ASTNode reg() throws ParseException {
   ASTNode l, r;
     l = regeq();
-    label_5:
+    label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LESS:
@@ -370,7 +374,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[15] = jj_gen;
-        break label_5;
+        break label_6;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LESS:
@@ -406,7 +410,7 @@ public class Parser implements ParserConstants {
   final public ASTNode regeq() throws ParseException {
   ASTNode l, r;
     l = term();
-    label_6:
+    label_7:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PLUS:
@@ -415,7 +419,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[17] = jj_gen;
-        break label_6;
+        break label_7;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PLUS:
@@ -441,7 +445,7 @@ public class Parser implements ParserConstants {
   final public ASTNode term() throws ParseException {
   ASTNode l, r;
     l = term2();
-    label_7:
+    label_8:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case MULTIPLY:
@@ -450,7 +454,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[19] = jj_gen;
-        break label_7;
+        break label_8;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case MULTIPLY:
@@ -476,7 +480,7 @@ public class Parser implements ParserConstants {
   final public ASTNode term2() throws ParseException {
   Token i; ASTNode l, r; List<ASTNode> ln = new ArrayList<ASTNode>();
     l = term3();
-    label_8:
+    label_9:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DOT:
@@ -486,7 +490,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[21] = jj_gen;
-        break label_8;
+        break label_9;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case DOT:
@@ -518,7 +522,7 @@ public class Parser implements ParserConstants {
   final public ASTNode term3() throws ParseException {
   Token i; ASTNode l, r; List<ASTNode> ln = new ArrayList<ASTNode>();
     l = unary();
-    label_9:
+    label_10:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case LPAR:
@@ -526,7 +530,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[23] = jj_gen;
-        break label_9;
+        break label_10;
       }
       jj_consume_token(LPAR);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -654,7 +658,7 @@ public class Parser implements ParserConstants {
   final public ASTDecl decl() throws ParseException {
         Token i; ASTNode d, r; List<Pair<String, String>> e;
         ASTDecl list = new ASTDecl();
-    label_10:
+    label_11:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case VAL:
@@ -664,7 +668,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[27] = jj_gen;
-        break label_10;
+        break label_11;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case VAL:
@@ -712,7 +716,7 @@ public class Parser implements ParserConstants {
   ASTNode e; List<ASTNode> list = new ArrayList<ASTNode>();
     e = expr();
                list.add(e);
-    label_11:
+    label_12:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
@@ -720,7 +724,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[29] = jj_gen;
-        break label_11;
+        break label_12;
       }
       jj_consume_token(COMMA);
       e = expr();
@@ -745,7 +749,7 @@ public class Parser implements ParserConstants {
         ;
       }
                                          list.add(new Pair(i.image, t));
-      label_12:
+      label_13:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
@@ -753,7 +757,7 @@ public class Parser implements ParserConstants {
           break;
         default:
           jj_la1[31] = jj_gen;
-          break label_12;
+          break label_13;
         }
         jj_consume_token(COMMA);
         i = jj_consume_token(ID);
@@ -824,7 +828,7 @@ public class Parser implements ParserConstants {
     case FUN:
       t = type();
                   list.add(t);
-      label_13:
+      label_14:
       while (true) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case COMMA:
@@ -832,7 +836,7 @@ public class Parser implements ParserConstants {
           break;
         default:
           jj_la1[35] = jj_gen;
-          break label_13;
+          break label_14;
         }
         jj_consume_token(COMMA);
         t = type();
@@ -862,7 +866,7 @@ public class Parser implements ParserConstants {
     jj_consume_token(COLON);
     r = expr();
                                           list.addToList(t.image, r);
-    label_14:
+    label_15:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case COMMA:
@@ -870,7 +874,7 @@ public class Parser implements ParserConstants {
         break;
       default:
         jj_la1[37] = jj_gen;
-        break label_14;
+        break label_15;
       }
       jj_consume_token(COMMA);
       t = jj_consume_token(ID);
@@ -950,10 +954,10 @@ public class Parser implements ParserConstants {
       jj_la1_init_1();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x40e00380,0x20000000,0x2000800,0x80000000,0xe00380,0x10000100,0x10000100,0x40e00380,0x4000000,0x200,0xe00380,0x100000,0x80000,0x60000,0x60000,0x1e000,0x1e000,0x60,0x60,0x1080,0x1080,0x0,0x0,0x100,0xe00380,0xe00180,0xc00180,0x8000000,0x8000000,0x2000000,0x1000000,0x2000000,0x1000000,0x0,0x80,0x2000000,0x80,0x2000000,0x48e00380,0x20000000,};
+      jj_la1_0 = new int[] {0x20000000,0x40e00380,0x2000800,0x80000000,0xe00380,0x10000100,0x10000100,0x40e00380,0x4000000,0x200,0xe00380,0x100000,0x80000,0x60000,0x60000,0x1e000,0x1e000,0x60,0x60,0x1080,0x1080,0x0,0x0,0x100,0xe00380,0xe00180,0xc00180,0x8000000,0x8000000,0x2000000,0x1000000,0x2000000,0x1000000,0x0,0x80,0x2000000,0x80,0x2000000,0x48e00380,0x20000000,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0xde418f,0x0,0x0,0x0,0xdc4180,0x0,0x0,0xde418f,0x0,0x100,0xdc4180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x14200,0x14200,0x0,0xdc4180,0xdc4080,0xdc4080,0x120,0x120,0x0,0x0,0x0,0x0,0x400000,0x3c00,0x0,0x3c00,0x0,0xde41af,0x0,};
+      jj_la1_1 = new int[] {0x0,0xde418f,0x0,0x0,0xdc4180,0x0,0x0,0xde418f,0x0,0x100,0xdc4180,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x14200,0x14200,0x0,0xdc4180,0xdc4080,0xdc4080,0x120,0x120,0x0,0x0,0x0,0x0,0x400000,0x3c00,0x0,0x3c00,0x0,0xde41af,0x0,};
    }
 
   /** Constructor with InputStream. */

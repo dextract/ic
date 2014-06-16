@@ -97,7 +97,7 @@ ASTNode main() :
 ASTNode stmt() :
 { ASTNode l, r; }
 {
- l = loop() [< SEMICOLON > [r = stmt() { l = new ASTSeq(l,r); }]]
+ l = loop() (< SEMICOLON > [r = loop() { l = new ASTSeq(l,r); }])*
  	{ return l; }
 }
 
@@ -106,11 +106,11 @@ ASTNode loop() :
 {
   < LPARC > l = progblock() < RPARC >
   	{ return l; }
-| < WHILE > < LPAR > l = expr() < RPAR > r = stmt() { l = new ASTWhile(l,r); }
+| < WHILE > < LPAR > l = expr() < RPAR > r = loop() { l = new ASTWhile(l,r); }
   	{ return l; }
-| < FOR > < LPAR > i = < ID > < COLON > l = expr() (< RPAR > r = stmt() { l = new ASTForEach(i.image, l, r); } | < COMMA > rr = expr() < RPAR > r = stmt() { l = new ASTForEachFilter(i.image, l, r, rr); } )
+| < FOR > < LPAR > i = < ID > < COLON > l = expr() (< RPAR > r = loop() { l = new ASTForEach(i.image, l, r); } | < COMMA > rr = expr() < RPAR > r = loop() { l = new ASTForEachFilter(i.image, l, r, rr); } )
  	{ return l; }
-| < IF > < LPAR > e = expr() < RPAR > l = stmt() (< ELSE > r = stmt() { l = new ASTIfElse(e, l, r); } | { l = new ASTIf(e, l); } )
+| < IF > < LPAR > e = expr() < RPAR > l = loop() (< ELSE > r = loop() { l = new ASTIfElse(e, l, r); } | { l = new ASTIf(e, l); } )
   	{ return l; }
 | < PRINT > < LPAR > l = expr() < RPAR > { l = new ASTPrint(l); }
 	{ return l; }
