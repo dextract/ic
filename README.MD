@@ -1,3 +1,4 @@
+Exemplos que não estavam a funcionar correctactemente na discussão e que se comportam como deveriam agora.
 
 ```
 #!python
@@ -26,7 +27,6 @@ END
 END
 
 
-
 {
     val x = {a:alloc(1),
              c:function(a){ return *(this.a) },
@@ -39,6 +39,9 @@ END
 }
 END
 
+```
+```
+#!python
 
 EXEMPLOS DEMONSTRATIVOS:
 EXEMPLO FUNCAO:
