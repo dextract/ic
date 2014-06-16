@@ -1,4 +1,4 @@
-Exemplos que não estavam a funcionar correctactemente na discussão e que se comportam como deveriam agora.
+Exemplos que não estavam a funcionar correctamente na discussão e que se comportam como deveriam agora.
 
 ```
 #!python
